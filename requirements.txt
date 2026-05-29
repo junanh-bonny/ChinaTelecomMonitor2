@@ -1,0 +1,5 @@
+#pycryptodome
+#requests
+Flask
+requests
+pycryptodome

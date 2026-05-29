@@ -1,0 +1,39 @@
+name: Monitor Telecom Usage
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 * * * *'  
+
+permissions:
+  contents: write
+
+jobs:
+  monitor:
+    runs-on: ubuntu-latest
+    env:
+      TELECOM_USER: ${{ secrets.TELECOM_USER }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install requests pycryptodome
+
+      - name: Run monitor script
+        run: python telecom_monitor.py
+
+      - name: Commit and push usage.json
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add usage.json
+          git commit -m "Update usage data" || echo "No changes to commit"
+          git push

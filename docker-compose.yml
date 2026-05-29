@@ -1,0 +1,13 @@
+name: china-telecom-monitor
+services:
+  china-telecom-monitor:
+    image: cp0204/chinatelecommonitor:main
+    container_name: china-telecom-monitor
+    network_mode: bridge
+    ports:
+      - 10000:10000
+    volumes:
+      - ./china-telecom-monitor/config:/app/config
+    environment:
+      - WHITELIST_NUM=
+    restart: unless-stopped
