@@ -90,7 +90,7 @@ def main():
         login_fail_time = CONFIG_DATA.get("loginFailTime", 0)
         if login_fail_time < 5:
             data = telecom.do_login(phonenum, password)
-            if data.get("responseData").get("resultCode") == "0000":
+            if data.get("responseData", {}).get("resultCode") == "0000":
                 print(f"自动登录：成功")
                 login_info = data["responseData"]["data"]["loginSuccessResult"]
                 login_info["phonenum"] = phonenum
@@ -147,7 +147,11 @@ def main():
                     else:
                         flux_package_str += f"🔹[{product['title']}]{product['leftTitle']}{product['leftHighlight']}{product['rightCommon']}\n"
 
-    common_str = f"{telecom.convert_flow(summary['commonUse'],'GB',2)} / {telecom.convert_flow(summary['commonTotal'],'GB',2)} GB" if summary["flowOver"] == 0 else f"-{telecom.convert_flow(summary['flowOver'],'GB',2)} / {telecom.convert_flow(summary['commonTotal'],'GB',2)} GB"
+    common_str = (
+        f"{telecom.convert_flow(summary['commonUse'],'GB',2)} / {telecom.convert_flow(summary['commonTotal'],'GB',2)} GB"
+        if summary["flowOver"] == 0
+        else f"-{telecom.convert_flow(summary['flowOver'],'GB',2)} / {telecom.convert_flow(summary['commonTotal'],'GB',2)} GB"
+    )
     status_icon = usage_status_icon(summary["commonUse"], summary["commonTotal"])
     common_str = f"{common_str} {status_icon}"
     special_str = f"{telecom.convert_flow(summary['specialUse'], 'GB', 2)} / {telecom.convert_flow(summary['specialTotal'], 'GB', 2)} GB" if summary["specialTotal"] > 0 else ""
