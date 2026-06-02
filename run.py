@@ -1,5 +1,5 @@
 # run.py
-from telecom_api import app
+from app.api_server import app
 import os
 
 if __name__ == '__main__':
