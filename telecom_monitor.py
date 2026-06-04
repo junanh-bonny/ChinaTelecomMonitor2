@@ -179,9 +179,14 @@ def main():
             send_notify("【电信套餐用量监控】", notify_body)
 
     # ========== 生成供手机读取的 usage.json ==========
-    # 注意：summary 中的 commonUse / commonTotal 单位是 MB，需要转换为 GB（十进制 1000）
-    flow_used_gb = round(summary['commonUse'] / 1000, 2)
-    flow_total_gb = round(summary['commonTotal'] / 1000, 2)
+    # 注意：summary 中的 commonUse / commonTotal 单位是 KB，需要转换为 GB（二进制 1024*1024）
+    flow_used_gb = round(summary['commonUse'] / 1024 / 1024, 2)
+    flow_total_gb = round(summary['commonTotal'] / 1024 / 1024, 2)
+    
+    # 获取 GMT+8 时间（北京时间）
+    now_utc = datetime.datetime.utcnow()
+    now_gmt8 = now_utc + datetime.timedelta(hours=8)
+    update_time_gmt8 = now_gmt8.strftime("%Y-%m-%d %H:%M:%S")
 
     usage_json = {
         "balance": round(summary['balance'] / 100, 2),
@@ -189,7 +194,7 @@ def main():
         "flowTotal": flow_total_gb,
         "voiceUsed": summary['voiceUsage'],
         "voiceTotal": summary['voiceTotal'] if summary['voiceTotal'] > 0 else 0,
-        "updateTime": summary['createTime'],
+        "updateTime": update_time_gmt8,
         "statusIcon": status_icon
     }
     try:
