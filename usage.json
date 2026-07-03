@@ -1,9 +1,9 @@
 {
   "balance": 0.0,
-  "flowUsed": 4.31,
+  "flowUsed": 4.5,
   "flowTotal": 20.0,
-  "voiceUsed": 20,
+  "voiceUsed": 23,
   "voiceTotal": 300,
-  "updateTime": "2026-07-03 07:36:52",
+  "updateTime": "2026-07-03 10:57:50",
   "statusIcon": "🟠"
 }
