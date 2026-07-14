@@ -90,6 +90,7 @@ def main():
         login_fail_time = CONFIG_DATA.get("loginFailTime", 0)
         if login_fail_time < 5:
             data = telecom.do_login(phonenum, password)
+            print(f"[DEBUG] 登录响应: {json.dumps(data, ensure_ascii=False, indent=2)}")  # 调试输出
             if data.get("responseData", {}).get("resultCode") == "0000":
                 print(f"自动登录：成功")
                 login_info = data["responseData"]["data"]["loginSuccessResult"]
@@ -99,7 +100,11 @@ def main():
                 CONFIG_DATA["loginFailTime"] = 0
                 telecom.set_login_info(login_info)
             else:
-                # 修复第102行：处理loginFailTime可能是字符串的情况
+                # 修复第102行：处理loginFailTime可能是字符串的情况，并输出详细错误信息
+                result_code = data.get("responseData", {}).get("resultCode", "未知")
+                result_desc = data.get("responseData", {}).get("resultDesc", "无描述")
+                print(f"[DEBUG] 登录失败 - resultCode: {result_code}, resultDesc: {result_desc}")
+                
                 login_fail_time_value = data.get("responseData", {}).get("data", {}).get("loginFailResult", {}).get("loginFailTime", login_fail_time + 1)
                 try:
                     # 如果是字符串日期格式，则累加失败次数；否则直接转换为int
@@ -111,7 +116,7 @@ def main():
                     login_fail_time = login_fail_time + 1
                 CONFIG_DATA["loginFailTime"] = login_fail_time
                 update_config()
-                add_notify(f"自动登录：已连续失败{login_fail_time}次，程序退出")
+                add_notify(f"自动登录：已连续失败{login_fail_time}次，程序退出 (错误代码: {result_code}, 描述: {result_desc})")
                 exit(data)
         else:
             print(f"自动登录：已连续失败{login_fail_time}次，为避免风控不再执行")
