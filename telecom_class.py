@@ -35,13 +35,14 @@ class Telecom:
         self.phonenum = None
         self.password = None
         self.token = None
-        self.client_type = "#12.2.0#channel50#iPhone 14 Pro#"
+        # 更新 client_type 为更新的版本（2024年版本）
+        self.client_type = "#16.0.0#channel50#iPhone 15 Pro#"
         self.headers = {
             "Accept": "application/json",
             "Content-Type": "application/json; charset=UTF-8",
             "Connection": "Keep-Alive",
             "Accept-Encoding": "gzip",
-            "user-agent": "P216010901",
+            "User-Agent": "Mozilla/5.0 (iPhone; CPU iPhone OS 17_5 like Mac OS X) AppleWebKit/605.1.15",
         }
         # 创建会话并使用自定义适配器
         self.session = requests.Session()
@@ -84,6 +85,9 @@ PMpq0/XKBO8lYhN/gwIDAQAB
         return int((fee_remain_flow / days_in_month))
 
     def do_login(self, phonenum, password):
+        """
+        执行登录操作，返回登录结果
+        """
         phonenum = phonenum or self.phonenum
         password = password or self.password
         uuid = str(random.randint(1000000000000000, 9999999999999999))
@@ -99,7 +103,7 @@ PMpq0/XKBO8lYhN/gwIDAQAB
                     "loginAuthCipherAsymmertric": self.encrypt(enc_str),
                     "loginType": "4",
                     "phoneNum": self.trans_number(phonenum),
-                    "systemVersion": "13.2.3",
+                    "systemVersion": "17.5",
                 },
                 "attach": "test",
             },
@@ -114,20 +118,25 @@ PMpq0/XKBO8lYhN/gwIDAQAB
                 "userLoginName": self.trans_number(phonenum),
             },
         }
-        response = self.session.post(
-            "https://appgologin.189.cn:9031/login/client/userLoginNormal",
-            headers=self.headers,
-            json=body,
-        )
-        return response.json()
+        try:
+            response = self.session.post(
+                "https://appgologin.189.cn:9031/login/client/userLoginNormal",
+                headers=self.headers,
+                json=body,
+                timeout=10,
+            )
+            return response.json()
+        except Exception as e:
+            print(f"登录请求异常: {e}")
+            return {"responseData": {"resultCode": "9999", "resultDesc": f"请求异常: {e}"}}
 
     def qry_important_data(self, **kwargs):
         ts = datetime.now().strftime("%Y%m%d%H%M00")
         body = {
             "content": {
                 "fieldData": {
-                    "provinceCode": self.login_info["provinceCode"] or "600101",
-                    "cityCode": self.login_info["cityCode"] or "8441900",
+                    "provinceCode": self.login_info.get("provinceCode") or "600101",
+                    "cityCode": self.login_info.get("cityCode") or "8441900",
                     "shopId": "20002",
                     "isChinatelecom": "0",
                     "account": self.trans_number(self.phonenum),
@@ -145,12 +154,17 @@ PMpq0/XKBO8lYhN/gwIDAQAB
                 "token": kwargs.get("token") or self.token,
             },
         }
-        response = self.session.post(
-            "https://appfuwu.189.cn:9021/query/qryImportantData",
-            headers=self.headers,
-            json=body,
-        )
-        return response.json()
+        try:
+            response = self.session.post(
+                "https://appfuwu.189.cn:9021/query/qryImportantData",
+                headers=self.headers,
+                json=body,
+                timeout=10,
+            )
+            return response.json()
+        except Exception as e:
+            print(f"查询数据请求异常: {e}")
+            return {"headerInfos": {"code": "9999", "reason": f"请求异常: {e}"}}
 
     def user_flux_package(self, **kwargs):
         ts = datetime.now().strftime("%Y%m%d%H%M00")
@@ -174,12 +188,17 @@ PMpq0/XKBO8lYhN/gwIDAQAB
                 "token": kwargs.get("token") or self.token,
             },
         }
-        response = self.session.post(
-            "https://appfuwu.189.cn:9021/query/userFluxPackage",
-            headers=self.headers,
-            json=body,
-        )
-        return response.json()
+        try:
+            response = self.session.post(
+                "https://appfuwu.189.cn:9021/query/userFluxPackage",
+                headers=self.headers,
+                json=body,
+                timeout=10,
+            )
+            return response.json()
+        except Exception as e:
+            print(f"获取流量包请求异常: {e}")
+            return {"responseData": None}
 
     def qry_share_usage(self, **kwargs):
         billing_cycle = kwargs.get("billing_cycle") or datetime.now().strftime("%Y%m")
@@ -203,12 +222,18 @@ PMpq0/XKBO8lYhN/gwIDAQAB
                 "token": kwargs.get("token") or self.token,
             },
         }
-        response = self.session.post(
-            "https://appfuwu.189.cn:9021/query/qryShareUsage",
-            headers=self.headers,
-            json=body,
-        )
-        data = response.json()
+        try:
+            response = self.session.post(
+                "https://appfuwu.189.cn:9021/query/qryShareUsage",
+                headers=self.headers,
+                json=body,
+                timeout=10,
+            )
+            data = response.json()
+        except Exception as e:
+            print(f"查询共享使用请求异常: {e}")
+            return {"responseData": None}
+        
         # 返回的号码字段加密，需做解密转换
         if data.get("responseData") and data.get("responseData").get("data", {}).get(
             "sharePhoneBeans", []
