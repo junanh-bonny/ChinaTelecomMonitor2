@@ -99,7 +99,16 @@ def main():
                 CONFIG_DATA["loginFailTime"] = 0
                 telecom.set_login_info(login_info)
             else:
-                login_fail_time = int(data.get("responseData", {}).get("data", {}).get("loginFailResult", {}).get("loginFailTime", login_fail_time + 1))
+                # 修复第102行：处理loginFailTime可能是字符串的情况
+                login_fail_time_value = data.get("responseData", {}).get("data", {}).get("loginFailResult", {}).get("loginFailTime", login_fail_time + 1)
+                try:
+                    # 如果是字符串日期格式，则累加失败次数；否则直接转换为int
+                    if isinstance(login_fail_time_value, str):
+                        login_fail_time = login_fail_time + 1
+                    else:
+                        login_fail_time = int(login_fail_time_value)
+                except (ValueError, TypeError):
+                    login_fail_time = login_fail_time + 1
                 CONFIG_DATA["loginFailTime"] = login_fail_time
                 update_config()
                 add_notify(f"自动登录：已连续失败{login_fail_time}次，程序退出")
